@@ -1,0 +1,18 @@
+﻿Migrations for 'alerts':
+  apps\alerts\migrations\0001_initial.py
+    - Create model Alert
+Migrations for 'categories':
+  apps\categories\migrations\0001_initial.py
+    - Create model Category
+Migrations for 'devices':
+  apps\devices\migrations\0001_initial.py
+    - Create model Device
+Migrations for 'predictions':
+  apps\predictions\migrations\0001_initial.py
+    - Create model Prediction
+Migrations for 'reports':
+  apps\reports\migrations\0001_initial.py
+    - Create model Report
+Migrations for 'users':
+  apps\users\migrations\0001_initial.py
+    - Create model UserProfile

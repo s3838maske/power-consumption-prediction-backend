@@ -1,0 +1,3 @@
+﻿Migrations for 'consumption':
+  apps\consumption\migrations\0001_initial.py
+    - Create model ConsumptionData
