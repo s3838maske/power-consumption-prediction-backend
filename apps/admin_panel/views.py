@@ -18,11 +18,17 @@ class AdminUserListView(generics.ListAPIView):
 
 class UserActivateView(views.APIView):
     def post(self, request, id):
+        if request.user.role != 'admin':
+            return Response({"error": "Unauthorized"}, status=403)
         try:
             user = User.objects.get(id=id)
-            user.status = 'active' # Assuming status exists
+            # Toggle status
+            user.status = 'inactive' if user.status == 'active' else 'active'
             user.save()
-            return Response({"message": "User activated successfully"})
+            return Response({
+                "message": f"User {user.status} successfully",
+                "status": user.status
+            })
         except User.DoesNotExist:
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 

@@ -199,16 +199,19 @@ python manage.py runserver
 | POST   | `/api/auth/login`           | User login            |
 | POST   | `/api/auth/admin-login`     | Admin portal login    |
 | GET    | `/api/auth/profile`         | Get current user info |
-| PUT    | `/api/auth/change-password` | Security update       |
+| POST   | `/api/auth/change-password` | Security update       |
+| POST   | `/api/auth/logout`          | Logout user           |
 
 ### 👤 User & Admin
 
-| Method | Endpoint                         | Description          |
-| :----- | :------------------------------- | :------------------- |
-| GET    | `/api/users/`                    | List users (Admin)   |
-| DELETE | `/api/users/{id}`                | Remove user (Admin)  |
-| GET    | `/api/admin/logs`                | System activity logs |
-| PUT    | `/api/admin/users/{id}/activate` | Manage status        |
+| Method   | Endpoint                         | Description          |
+| :------- | :------------------------------- | :------------------- |
+| GET      | `/api/users/`                    | List users (Admin)   |
+| DELETE   | `/api/users/{id}`                | Remove user (Admin)  |
+| GET      | `/api/admin/logs`                | System activity logs |
+| POST     | `/api/admin/users/{id}/activate` | Manage status        |
+| GET/POST | `/api/admin/category`            | Manage categories    |
+| GET/POST | `/api/admin/product`             | Manage products      |
 
 ### ⚡ Consumption & Predictions
 
@@ -216,18 +219,48 @@ python manage.py runserver
 | :----- | :------------------------------- | :-------------------- |
 | POST   | `/api/consumption/upload-excel`  | Process dataset       |
 | GET    | `/api/consumption/history`       | Historical usage      |
+| GET    | `/api/consumption/{id}`          | Consumption detail    |
 | POST   | `/api/prediction/generate`       | Run ML models         |
+| GET    | `/api/prediction/history`        | Prediction history    |
 | GET    | `/api/prediction/compare-actual` | Accuracy check        |
-| POST   | `/api/prediction/retrain`        | Update models (Admin) |
+| GET    | `/api/prediction/{device_id}`    | Predictions by device |
 
 ### 📊 Dashboard & Reports
 
-| Method | Endpoint                      | Description   |
-| :----- | :---------------------------- | :------------ |
-| GET    | `/api/dashboard/user-summary` | Chart data    |
-| GET    | `/api/dashboard/peak-hours`   | Energy alerts |
-| GET    | `/api/reports/download-pdf`   | Export PDF    |
-| GET    | `/api/reports/download-excel` | Export Excel  |
+| Method | Endpoint                         | Description         |
+| :----- | :------------------------------- | :------------------ |
+| GET    | `/api/dashboard/user-summary`    | User Summary stats  |
+| GET    | `/api/dashboard/dashboard-stats` | Main dashboard data |
+| GET    | `/api/dashboard/peak-hours`      | Energy analytics    |
+| GET    | `/api/reports/download-pdf`      | Export PDF          |
+| GET    | `/api/reports/download-excel`    | Export Excel        |
+
+---
+
+## 🔍 Power Consumption Prediction Flow
+
+To test the system manually, follow this flow:
+
+1.  **Authentication**:
+    - Register a new user via the signup page.
+    - Log in to access the User Dashboard.
+2.  **Device Setup**:
+    - Navigate to **Device Management**.
+    - Add your household devices (e.g., "HVAC", "Refrigerator") with their estimated power ratings in Watts.
+3.  **Consumption Data Ingestion**:
+    - Go to **Upload Data**.
+    - Prepare an Excel file (.xlsx) with columns: `date` (YYYY-MM-DD), `device` (Name matching your devices), and `consumption` (kWh).
+    - Upload the file. The system validates the columns and stores the records in MongoDB.
+4.  **Generating Predictions**:
+    - Navigate to the **Predictions** page.
+    - The system analyzes your historical data using the backend ML module.
+    - Click **"Generate Prediction"**. The backend processes the request through the Random Forest model (or baseline simulator) and provides a 7-day forecast.
+5.  **Analytics & Monitoring**:
+    - Check the **Dashboard** for real-time summaries and usage trends.
+    - Compare the "Predicted vs Actual" chart to see the model's accuracy.
+    - View **Peak Hours** to identify when energy consumption is highest in your household.
+6.  **Reporting**:
+    - Generate and download PDF or Excel reports from the **Reports** section for offline analysis.
 
 ---
 

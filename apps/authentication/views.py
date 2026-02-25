@@ -33,6 +33,7 @@ class LoginView(views.APIView):
             return Response({
                 'user': UserSerializer(user).data,
                 'token': str(refresh.access_token),
+                'refresh': str(refresh),
                 'role': user.role
             })
         return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -50,6 +51,7 @@ class AdminLoginView(views.APIView):
             return Response({
                 'user': UserSerializer(user).data,
                 'token': str(refresh.access_token),
+                'refresh': str(refresh),
                 'role': user.role
             })
         return Response({'message': 'Invalid admin credentials'}, status=status.HTTP_401_UNAUTHORIZED)
