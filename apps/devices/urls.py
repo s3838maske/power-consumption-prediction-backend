@@ -1,10 +1,7 @@
-from django.urls import path, include
-from rest_framework.routers import SimpleRouter
-from .views import DeviceViewSet
-
-router = SimpleRouter(trailing_slash=False)
-router.register(r'', DeviceViewSet)
+from django.urls import path
+from .views import DeviceViewSet, DeviceDetailView
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('', DeviceViewSet.as_view()),
+    path('<str:id>', DeviceDetailView.as_view()),
 ]
