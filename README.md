@@ -58,12 +58,12 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 
 # MongoDB
 
-MONGODB_URI=mongodb+srv://maskeshubham555_db_user:8eJdX1m0vLH8sZa3@power-consumption-predi.wllmm1i.mongodb.net/power_consumption_db?retryWrites=true&w=majority&appName=power-consumption-prediction
+MONGODB_URI=mongodb+srv://
 MONGODB_NAME=power_consumption_db
-MONGODB_HOST=power-consumption-predi.wllmm1i.mongodb.net
+MONGODB_HOST=
 MONGODB_PORT=27017
-MONGODB_USER=maskeshubham555_db_user
-MONGODB_PASSWORD=8eJdX1m0vLH8sZa3
+MONGODB_USER=
+MONGODB_PASSWORD=
 
 # JWT
 
@@ -85,10 +85,10 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 
 MONGODB_URI=mongodb+srv://
 MONGODB_NAME=power_consumption_db
-MONGODB_HOST=power-consumption-predi.wllmm1i.mongodb.net
+MONGODB_HOST=
 MONGODB_PORT=27017
-MONGODB_USER=maskeshubham555_db_user
-MONGODB_PASSWORD=8eJdX1m0vLH8sZa3
+MONGODB_USER=
+MONGODB_PASSWORD=
 
 # JWT
 
