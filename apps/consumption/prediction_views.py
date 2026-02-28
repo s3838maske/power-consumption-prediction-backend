@@ -1,28 +1,25 @@
-import joblib
 import pandas as pd
 import numpy as np
-import os
 from rest_framework import views
 from rest_framework.response import Response
-from django.conf import settings
-from .models import ConsumptionData
-
 from .mongo_utils import get_mongo_collection
+from .ml_loader import get_model, get_scaler
 import traceback
+
 
 class PredictionView(views.APIView):
     def get(self, request):
         user = request.user
         model_type = request.query_params.get('model', 'random_forest')
-        
-        # Load model and scaler
+        # Normalize to match filenames: linear_regression_model.pkl, random_forest_model.pkl
+        if model_type not in ('linear_regression', 'random_forest'):
+            model_type = 'random_forest'
+
         try:
-            model_path = os.path.join(settings.ML_MODELS_PATH, f'{model_type}_model.pkl')
-            scaler_path = os.path.join(settings.ML_MODELS_PATH, 'scaler.pkl')
-            
-            # For demo purposes, we check if folder exists, if not we still show simulated data
-            # but in a real app you'd strictly require the models
-            
+            # Use globally cached model/scaler (loaded once per process)
+            get_model(model_type)
+            get_scaler()
+
             # Fetch user's recent data for feature engineering via raw pymongo to avoid LIMIT bug
             col = get_mongo_collection('consumption_consumptiondata')
             recent_data = list(col.find({'user_id': user.id}).sort('date', -1).limit(14))

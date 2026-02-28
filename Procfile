@@ -1,1 +1,1 @@
-web: gunicorn power-consumption-prediction-backend.wsgi
+web: gunicorn config.wsgi

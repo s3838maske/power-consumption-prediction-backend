@@ -32,9 +32,11 @@ class DeviceViewSet(views.APIView):
         try:
             data = request.data
             col = get_mongo_collection('devices_device')
-            
-            # Simplified manual creation bypasses djongo/Django ORM
+            # Use explicit ObjectId so 'id' is set (avoids E11000 duplicate key on id: null)
+            oid = ObjectId()
             new_device = {
+                '_id': oid,
+                'id': oid,
                 'user_id': request.user.id,
                 'name': data.get('name'),
                 'device_type': data.get('device_type'),
@@ -43,12 +45,13 @@ class DeviceViewSet(views.APIView):
                 'status': data.get('status', 'active'),
                 'created_at': datetime.now()
             }
-            
-            result = col.insert_one(new_device)
-            new_device['id'] = str(result.inserted_id)
-            del new_device['_id']
-            
-            return Response(new_device, status=status.HTTP_201_CREATED)
+            col.insert_one(new_device)
+            # Return shape expected by frontend (id as string, no _id)
+            out = {k: v for k, v in new_device.items() if k != '_id'}
+            out['id'] = str(new_device['id'])
+            if 'created_at' in out and hasattr(out['created_at'], 'isoformat'):
+                out['created_at'] = out['created_at'].isoformat()
+            return Response(out, status=status.HTTP_201_CREATED)
         except Exception as e:
             import traceback
             print(f"DeviceViewSet POST error: {traceback.format_exc()}")

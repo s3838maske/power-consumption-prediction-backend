@@ -58,14 +58,14 @@ class AdminLoginView(views.APIView):
 
 class LogoutView(views.APIView):
     def post(self, request):
-        try:
-            refresh_token = request.data.get("refresh")
-            if refresh_token:
+        refresh_token = request.data.get("refresh")
+        if refresh_token:
+            try:
                 token = RefreshToken(refresh_token)
                 token.blacklist()
-            return Response(status=status.HTTP_200_OK)
-        except Exception:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            except Exception:
+                pass  # Blacklist app may not be installed; still treat as logged out
+        return Response(status=status.HTTP_200_OK)
 
 class ProfileView(views.APIView):
     def get(self, request):

@@ -1,5 +1,6 @@
 """
 Django settings for power consumption prediction project.
+Production-ready for Railway (MongoDB, WhiteNoise, secure defaults).
 """
 
 import os
@@ -10,10 +11,15 @@ from datetime import timedelta
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Security
+# Security — SECRET_KEY must be set in production (Railway env)
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-production')
-DEBUG = config('DEBUG', default=True, cast=bool)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,power-consumption-prediction-backend.onrender.com').split(',')
+
+# DEBUG — False in production; set DEBUG=0 or leave unset on Railway
+DEBUG = config('DEBUG', default=False, cast=bool)
+
+# ALLOWED_HOSTS — Railway and local; set ALLOWED_HOSTS in Railway for your *.railway.app domain
+_allowed = config('ALLOWED_HOSTS', default='.railway.app,localhost,127.0.0.1')
+ALLOWED_HOSTS = [h.strip() for h in _allowed.split(',') if h.strip()]
 
 # Application definition
 INSTALLED_APPS = [
@@ -23,12 +29,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+
     # Third-party apps
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-    
+
     # Local apps
     'apps.authentication',
     'apps.users',
@@ -77,24 +83,35 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# Database - MongoDB
-MONGODB_URI = config('MONGODB_URI', default=None)
+# ——— Database: MongoDB (Railway MONGO_URL or MONGODB_URI) ———
+# Railway MongoDB plugin exposes MONGO_URL; fallback to MONGODB_URI for local/Render.
+MONGO_URL = os.environ.get('MONGO_URL') or config('MONGODB_URI', default=None)
+MONGODB_NAME = config('MONGODB_NAME', default='power_consumption_db')
 
-if MONGODB_URI:
+if MONGO_URL:
+    # Production: single URI (Railway); options in URI to avoid Djongo compatibility issues
+    # Short timeouts help cold start on Railway free tier
+    _uri = MONGO_URL.strip()
+    _suffix = 'retryWrites=true&w=majority&connectTimeoutMS=10000&serverSelectionTimeoutMS=10000'
+    if '?' in _uri:
+        _uri = f'{_uri}&{_suffix}' if not _uri.endswith('&') else f'{_uri}{_suffix}'
+    else:
+        _uri = f'{_uri}?{_suffix}'
     DATABASES = {
         'default': {
             'ENGINE': 'djongo',
-            'NAME': config('MONGODB_NAME', default='power_consumption_db'),
+            'NAME': MONGODB_NAME,
             'CLIENT': {
-                'host': MONGODB_URI,
+                'host': _uri,
             }
         }
     }
 else:
+    # Local / dev: individual host, port, auth
     DATABASES = {
         'default': {
             'ENGINE': 'djongo',
-            'NAME': config('MONGODB_NAME', default='power_consumption_db'),
+            'NAME': MONGODB_NAME,
             'CLIENT': {
                 'host': config('MONGODB_HOST', default='localhost'),
                 'port': int(config('MONGODB_PORT', default=27017)),
@@ -118,9 +135,10 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files
+# ——— Static files (WhiteNoise for Railway) ———
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = 'media/'
@@ -152,13 +170,17 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# CORS Settings
+# CORS — include Railway and frontend
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:8080",
     "http://127.0.0.1:8080",
-    "https://power-consumption-ai-prediction.vercel.app/"
+    "https://power-consumption-ai-prediction.vercel.app",
+]
+# Allow any *.railway.app origin (add exact URL in production if preferred)
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://[\w\-]+\.railway\.app$",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
@@ -170,7 +192,7 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
-# ML Models Path
+# ML Models path — .pkl files loaded once globally via apps.consumption.ml_loader
 ML_MODELS_PATH = os.path.join(BASE_DIR, 'ml_models')
 
 # File Upload Settings
