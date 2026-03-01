@@ -30,7 +30,10 @@ class GeneratePredictionView(views.APIView):
             predicted_val = round(avg_last_7 * random.uniform(0.9, 1.1), 2)
             
             col_pred = get_mongo_collection('predictions_prediction')
+            new_id = ObjectId()
             new_pred = {
+                'id': str(new_id),
+                '_id': new_id,
                 'user_id': user.id,
                 'device_name': request.data.get('device_name', 'Overall'),
                 'type': 'daily',
